@@ -1,0 +1,23 @@
+# On github.com, I imported the suckless dwm repo.
+# Then on my PC, I cloned my imported dwm repo.
+git clone https://github.com/screwtape9/dwm.git
+
+# Added a suckless remote.
+git remote add suckless https://git.suckless.org/dwm
+
+# Added this to prevent even attempting to push to the suckless remote.
+git remote set-url --push suckless NO_PUSHING
+
+# Created my surikku-dev branch
+git checkout -b surikku-dev
+git push -u origin surikku-dev
+
+# Now I hope to be able to periodically pull/update the master branch from
+# the suckless remote. That's all I intend for the master branch: only
+# keeping it up to date with suckless.
+
+# I'll do my custom patching and dev in the surikku-dev branch, and periodically
+# rebase from my master branch. Thus, keeping my surikku-dev dwm up to date with
+# suckless!
+
+# We shall see.
