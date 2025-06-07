@@ -260,6 +260,7 @@ static void (*handler[LASTEvent]) (XEvent *) = {
 };
 static Atom wmatom[WMLast], netatom[NetLast];
 static int running = 1;
+static int restart = 0;
 static Cur *cursor[CurLast];
 static Clr **scheme;
 static Display *dpy;
@@ -1257,6 +1258,8 @@ propertynotify(XEvent *e)
 void
 quit(const Arg *arg)
 {
+	if (arg->i)
+		restart = 1;
 	running = 0;
 }
 
@@ -1536,6 +1539,20 @@ setmfact(const Arg *arg)
 }
 
 void
+sigusr1(int unused)
+{
+	Arg a = {.i = 1};
+	quit(&a);
+}
+
+void
+sigusr2(int unused)
+{
+	Arg a = {.i = 0};
+	quit(&a);
+}
+
+void
 setup(void)
 {
 	int i;
@@ -1551,6 +1568,9 @@ setup(void)
 
 	/* clean up any zombies (inherited from .xinitrc etc) immediately */
 	while (waitpid(-1, NULL, WNOHANG) > 0);
+
+	signal(SIGUSR1, sigusr1);
+	signal(SIGUSR2, sigusr2);
 
 	/* init screen */
 	screen = DefaultScreen(dpy);
@@ -2158,6 +2178,8 @@ main(int argc, char *argv[])
 #endif /* __OpenBSD__ */
 	scan();
 	run();
+	if (restart)
+		execvp(argv[0], argv);
 	cleanup();
 	XCloseDisplay(dpy);
 	return EXIT_SUCCESS;
