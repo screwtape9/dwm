@@ -14,8 +14,10 @@ static const int usealtbar          = 1;        /* 1 means use non-dwm status ba
 static const char *altbarclass      = "Polybar"; /* Alternate bar class name */
 static const char *alttrayname      = "tray";    /* Polybar tray instance name */
 static const char *altbarcmd        = "$HOME/.config/polybar/launch.sh"; /* Alternate bar launch command */
-static const char *fonts[]          = { "monospace:size=10" };
-static const char dmenufont[]       = "monospace:size=10";
+static const char *fonts[]          = { "JetBrains Mono:style=Regular:size=16",
+                                        "Symbols Nerd Font:style=2048-em:size=20",
+                                        "JoyPixels:size=16:antialias=true:autohint=true" };
+static const char dmenufont[]       = "JetBrains Mono:style=Regular:size=16";
 static const char col_gray1[]       = "#222222";
 static const char col_gray2[]       = "#444444";
 static const char col_gray3[]       = "#bbbbbb";
@@ -35,9 +37,14 @@ static const Rule rules[] = {
 	 *	WM_CLASS(STRING) = instance, class
 	 *	WM_NAME(STRING) = title
 	 */
-	/* class      instance    title       tags mask     isfloating   monitor */
-	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
-	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
+	/* class                instance              title           tags mask     isfloating   monitor */
+	{ "FreeRDP",            NULL,                 NULL,           0,            1,           -1 },
+	{ "gnome-calculator",   "gnome-calculator",   NULL,           0,            1,           -1 },
+	{ "RabbitVCS",          "RabbitVCS",          NULL,           0,            1,           -1 },
+	{ "org.gnome.Nautilus", "org.gnome.Nautilus", NULL,           0,            1,           -1 },
+	{ "Sxiv",               "sxiv",               NULL,           0,            1,           -1 },
+	{ "st-256color",        "st-256color",        "pulsemixer",   0,            1,           -1 },
+	{ "Hello World",        "Hello World",        NULL,           0,            1,           -1 }
 };
 
 /* layout(s) */
@@ -69,7 +76,8 @@ static const Layout layouts[] = {
 };
 
 /* key definitions */
-#define MODKEY Mod1Mask
+#define MODKEY Mod4Mask
+#define MOD2KEY Mod1Mask
 #define TAGKEYS(KEY,TAG) \
 	{ MODKEY,                       KEY,      view,           {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
@@ -83,38 +91,65 @@ static const Layout layouts[] = {
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[]       = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
 static const char *termcmd[]        = { "st", NULL };
+static const char *rabbit[]         = { "rabbitvcs", "browser", NULL };
+static const char *chrocmd[]        = { "chromium", "--proxy-server=socks5://localhost:3434", "--host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE localhost", NULL };
 static const char *volumeupcmd[]    = { "pamixer", "--allow-boost", "-i", "3", NULL };
 static const char *volumedowncmd[]  = { "pamixer", "--allow-boost", "-d", "3", NULL };
 static const char *mutecmd[]        = { "pamixer", "-t", NULL };
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
-	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
-	{ MODKEY|ShiftMask,             XK_p,      spawn,          SHCMD("st -e pulsemixer") },
-	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
+	{ MODKEY|ShiftMask,             XK_d,      spawn,          {.v = dmenucmd } },
+	{ MODKEY,                       XK_Return, spawn,          {.v = termcmd  } },
+	{ MODKEY,                       XK_c,      spawn,          {.v = chrocmd  } },
+	{ MODKEY,                       XK_v,      spawn,          {.v = rabbit   } },
+	{ MODKEY,                       XK_Escape, spawn,          SHCMD("sysact") },
+	{ MODKEY,                       XK_d,      spawn,          SHCMD("rofi -show drun") },
+	{ MOD2KEY,                      XK_Tab,    spawn,          SHCMD("rofi -show window") },
+	{ MODKEY,                       XK_w,      spawn,          SHCMD("firefox") },
+	{ MODKEY|ShiftMask,             XK_w,      spawn,          SHCMD("firefox --private-window") },
+	{ MODKEY,                       XK_t,      spawn,          SHCMD("pidof -s picom && killall -9 picom || picom --backend glx &") },
+	{ MODKEY|ShiftMask,             XK_t,      spawn,          SHCMD("teams") },
+	{ 0,                            XK_Print,  spawn,          SHCMD("maim ~/Pictures/pic-full-$(date '+%y%m%d-%H%M-%S').png") },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
-	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
-	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
+	{ MODKEY,                       XK_j,      focusstack,     {.i = -1 } },
+	{ MODKEY,                       XK_k,      focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_m,      incnmaster,     {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_m,      incnmaster,     {.i = -1 } },
 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
-	{ MODKEY,                       XK_Return, zoom,           {0} },
-	{ MODKEY,                       XK_Tab,    view,           {0} },
-	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
-	{ MODKEY,                       XK_1,      setlayout,      {.v = &layouts[0]} },
-	{ MODKEY,                       XK_2,      setlayout,      {.v = &layouts[1]} },
-	{ MODKEY,                       XK_3,      setlayout,      {.v = &layouts[2]} },
-	{ MODKEY,                       XK_space,  setlayout,      {0} },
+	{ MODKEY,                       XK_space,  zoom,           {0} },
 	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
 	{ MODKEY,                       XK_i,      incrigaps,      {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_i,      incrigaps,      {.i = -1 } },
+	{ MODKEY|ShiftMask,             XK_h,      setcfact,       {.f = +0.25} },
+	{ MODKEY|ShiftMask,             XK_l,      setcfact,       {.f = -0.25} },
+	{ MODKEY|ShiftMask,             XK_o,      setcfact,       {.f =  0.00} },
+	{ MOD2KEY,                      XK_0,      togglegaps,     {0} },
+	{ MOD2KEY|ShiftMask,            XK_0,      defaultgaps,    {0} },
+	{ MODKEY,                       XK_u,      incrgaps,       {.i = +1 } },
+	{ MODKEY|ShiftMask,             XK_u,      incrgaps,       {.i = -1 } },
+	{ MOD2KEY,                      XK_o,      incrogaps,      {.i = +1 } },
+	{ MOD2KEY|ShiftMask,            XK_o,      incrogaps,      {.i = -1 } },
+	{ MOD2KEY,                      XK_6,      incrihgaps,     {.i = +1 } },
+	{ MOD2KEY|ShiftMask,            XK_6,      incrihgaps,     {.i = -1 } },
+	{ MOD2KEY,                      XK_7,      incrivgaps,     {.i = +1 } },
+	{ MOD2KEY|ShiftMask,            XK_7,      incrivgaps,     {.i = -1 } },
+	{ MOD2KEY,                      XK_8,      incrohgaps,     {.i = +1 } },
+	{ MOD2KEY|ShiftMask,            XK_8,      incrohgaps,     {.i = -1 } },
+	{ MOD2KEY,                      XK_9,      incrovgaps,     {.i = +1 } },
+	{ MOD2KEY|ShiftMask,            XK_9,      incrovgaps,     {.i = -1 } },
+	{ MODKEY,                       XK_Tab,    view,           {0} },
+	{ MOD2KEY,                      XK_1,      setlayout,      {.v = &layouts[0]} },
+	{ MOD2KEY,                      XK_2,      setlayout,      {.v = &layouts[1]} },
+	{ MOD2KEY,                      XK_3,      setlayout,      {.v = &layouts[2]} },
 	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
 	{ MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~0 } },
 	{ MODKEY,                       XK_comma,  focusmon,       {.i = -1 } },
 	{ MODKEY,                       XK_period, focusmon,       {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_comma,  tagmon,         {.i = -1 } },
 	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
+	{ MODKEY,                       XK_p,      spawn,          SHCMD("st -g \"176x20+398+508\" -e pulsemixer") },
 	{ 0, XF86XK_AudioMute,                     spawn,          {.v = mutecmd } },
 	{ 0, XF86XK_AudioRaiseVolume,              spawn,          {.v = volumeupcmd } },
 	{ 0, XF86XK_AudioLowerVolume,              spawn,          {.v = volumedowncmd } },
@@ -127,6 +162,7 @@ static const Key keys[] = {
 	TAGKEYS(                        XK_7,                      6)
 	TAGKEYS(                        XK_8,                      7)
 	TAGKEYS(                        XK_9,                      8)
+	{ MODKEY,                       XK_q,      killclient,     {0} },
 	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
 };
 
